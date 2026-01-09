@@ -1,8 +1,8 @@
 # BigClock - Digital Alarm Clock
 
 A full-screen digital alarm clock with local MP3 music support, voice-activated snooze, and multiple alarms. **100% reliable - no internet or server required!**
+<img width="1280" height="800" alt="main-clock png" src="https://github.com/user-attachments/assets/671e7d84-3c0a-4668-9e5a-9eeea0d76555" />
 
-![Main Clock Display](screenshots/main-clock.png)
 
 ## ⭐ Key Features
 
@@ -37,6 +37,8 @@ A full-screen digital alarm clock with local MP3 music support, voice-activated 
 4. Click **"🔊 Test Music"** to verify it works
 
 **Note:** You'll need to re-add files each time you open the page (browser security). Takes only seconds!
+
+<img width="1280" height="800" alt="main-clock png" src="https://github.com/user-attachments/assets/e07504d3-6815-4041-9560-cc1f68760b18" />
 
 ### Setting Alarms
 
