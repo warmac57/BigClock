@@ -38,7 +38,7 @@ A full-screen digital alarm clock with local MP3 music support, voice-activated 
 
 **Note:** You'll need to re-add files each time you open the page (browser security). Takes only seconds!
 
-<img width="1280" height="800" alt="main-clock png" src="https://github.com/user-attachments/assets/e07504d3-6815-4041-9560-cc1f68760b18" />
+<img width="609" height="599" alt="Screenshot 2026-01-09 15 22 27" src="https://github.com/user-attachments/assets/e9eb49b9-156e-4745-97ee-883d92e2db20" />
 
 ### Setting Alarms
 
