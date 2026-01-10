@@ -1,160 +1,205 @@
 # BigClock - Digital Alarm Clock
 
-A full-screen digital alarm clock with local MP3 music support, voice-activated snooze, and multiple alarms. **100% reliable - no internet or server required!**
-<img width="1280" height="800" alt="main-clock png" src="https://github.com/user-attachments/assets/671e7d84-3c0a-4668-9e5a-9eeea0d76555" />
+A feature-rich digital alarm clock with a large LED-style display, YouTube music support, and an intuitive web interface.
 
+![BigClock Screenshot](https://w1r05trg8bf6.space.minimax.io)
 
-## ⭐ Key Features
+## Features
 
-- 🕐 **Giant Clock Display** - 12-hour format with small AM/PM
-- ⏰ **Multiple Alarms** - Set as many as you need, toggle on/off individually  
-- 🎵 **Your Music** - Use MP3s/audio files from your computer
-- 😴 **15-Minute Snooze** - Easy snooze button when alarm rings
-- 💯 **100% Reliable** - No internet, no servers, just works
-- 📁 **Offline** - Everything runs locally
-- 🔊 **Test Button** - Verify music before bed
+### Large Digital Display
+- Massive LED-style time display with glowing neon effect
+- Shows hours, minutes, and seconds with animated colon separators
+- Current date displayed above the time
+- Smooth glow animation for visual appeal
+- Fully responsive design that works on desktop and mobile
 
-## 🚀 Quick Start
+### Alarm Management
+- Set multiple alarms with custom labels
+- Enable/disable alarms with a single toggle
+- Edit or delete existing alarms
+- Alarms persist between sessions using localStorage
+- Visual indicators show which alarms have YouTube music
 
-1. Download `alarm-clock-mp3.html`
-2. Double-click to open in browser
-3. Click "⚙️ Alarm Settings"
-4. Click "📁 Add MP3s" and select your music files
-5. Set alarm time and click "+ Add"
-6. Done!
+### Test Alarm
+- Preview your alarm sound before setting it
+- Click "Test Alarm" to hear the default sound or YouTube music
+- Automatic stop after 10 seconds
+- Useful for testing your alarm configuration
 
-**That's it!** No installation, no server, no permissions needed.
+### YouTube Music Integration
+- Paste any YouTube URL to use as your alarm sound
+- Supports standard video URLs: `https://www.youtube.com/watch?v=VIDEO_ID`
+- Supports short URLs: `https://youtu.be/VIDEO_ID`
+- Supports embed URLs: `https://www.youtube.com/embed/VIDEO_ID`
+- Supports playlists - plays the first video and loops
+- Automatic fallback to default sound if YouTube fails to load
 
-## 📖 How to Use
+### Alarm Actions
+- **Snooze**: Adds 9 minutes to your alarm time (preserves YouTube setting)
+- **Dismiss**: Stops the alarm and resets for the next day
+- Visual and audio alerts when alarm triggers
+- Pulsing red overlay for clear visual notification
 
-### Adding Music
+## How to Run
 
-1. Open settings (⚙️ button at bottom)
-2. Click **"📁 Add MP3s"**
-3. Select audio files from your computer
-   - Supports: MP3, WAV, OGG, M4A
-   - Can select multiple files at once
-4. Click **"🔊 Test Music"** to verify it works
+### Option 1: Use the Live URL (Easiest)
 
-**Note:** You'll need to re-add files each time you open the page (browser security). Takes only seconds!
+Simply open your browser to the deployed version:
 
-<img width="609" height="599" alt="Screenshot 2026-01-09 15 22 27" src="https://github.com/user-attachments/assets/e9eb49b9-156e-4745-97ee-883d92e2db20" />
+```
+https://w1r05trg8bf6.space.minimax.io
+```
 
-### Setting Alarms
+No installation required - works from anywhere with internet access.
 
-1. Pick a time
-2. Click **"+ Add"**
-3. Repeat for multiple alarms
-4. Toggle on/off with switch (🔔 = on, 🔕 = off)
-5. Delete with red button
+### Option 2: Run Locally with Python Server
 
-### When Alarm Rings
+#### Step 1: Install Python (If Needed)
 
-- Screen turns **red and pulses**
-- Music plays randomly from your files
-- Click **😴 Snooze** to snooze 15 minutes
-- Or click **✓ Dismiss** to stop the alarm
+If you don't have Python installed, you can get it for free from the Microsoft Store:
 
-## 🎯 Tips
+1. Open the **Microsoft Store** app
+2. Search for "Python"
+3. Install **Python 3.11** or newer
+4. During installation, make sure to check **"Add Python to PATH"**
 
-**Before Bed:**
-- Re-add your MP3 files (30 seconds)
-- Test music with 🔊 button
-- Set volume to 70-80%
-- Keep browser tab open overnight
+#### Step 2: Start the Server
 
-**Music Selection:**
-- Keep alarm music in one folder for quick selection
-- Add 3-5 songs for variety
-- Pick songs that start immediately
-- Avoid long intros
+1. Open **Command Prompt** or **PowerShell**
+2. Navigate to the project folder:
 
-**Reliability:**
-- Computer must not sleep/hibernate
-- Browser tab must stay open
-- Check alarm toggle is ON (🔔)
-- Verify time is correct (AM vs PM!)
+```cmd
+cd \workspace\alarm-clock
+```
 
-## ❓ Troubleshooting
+3. Start the Python HTTP server:
 
-### No Music Playing
-- Did you add audio files?
-- Click "🔊 Test Music" to verify
-- Check computer volume
-- Try different audio files
+```cmd
+python -m http.server 8080
+```
 
-### Alarm Didn't Ring
-- Was browser tab open all night?
-- Did computer go to sleep?
-- Is alarm toggle ON (🔔)?
-- Check AM/PM is correct
+4. You should see a message like: "Serving HTTP on 0.0.0.0 port 8080"
 
-### Have to Re-add Music Every Time?
-- Yes, this is browser security
-- Only takes 30 seconds
-- Keep music files in one folder
-- Small price for 100% reliability!
+#### Step 3: Open in Browser
 
-## 📁 Files in This Repo
+1. Open your web browser
+2. Go to: `http://localhost:8080`
+3. The alarm clock should load and display the current time
 
-- **alarm-clock-mp3.html** ⭐ **USE THIS ONE** - Local MP3 version
-- **alarm-clock.html** - YouTube version (needs server, less reliable)
-- **README.md** - This file
-- **TROUBLESHOOTING.md** - Detailed troubleshooting guide
+#### Step 4: Stop the Server
 
-## 🆚 MP3 vs YouTube Version
+When you're done, press `Ctrl+C` in the Command Prompt window to stop the server.
 
-### MP3 Version (RECOMMENDED)
-- ✅ 100% reliable
-- ✅ Works offline
-- ✅ No server needed
-- ✅ Just double-click to open
-- ✅ Instant loading
-- ✅ Your own music
-- ⚠️ Re-add files each session (30 sec)
+#### Step 5: Create a Windows Launcher (Optional)
 
-### YouTube Version
-- ❌ Needs web server
-- ❌ Needs internet
-- ❌ API can fail
-- ❌ Complex setup
-- ✅ Access any YouTube video
+Create a batch file to start the server with a single double-click:
 
-**For an alarm clock, reliability is everything. Use the MP3 version.**
+1. Create a new file called `start.bat` in your project folder
+2. Add the following content:
 
-## 🔧 Technical Details
+```batch
+@echo off
+echo Open - Press and hold Ctrl and click URL: http://localhost:8000/index.html
+echo.
+echo YouTube Test URL example: https://music.youtube.com/watch?v=dNibWP8f5PQ
+echo.
 
-- Pure HTML/CSS/JavaScript
-- HTML5 Audio API
-- localStorage for settings
-- Central Standard Time (CST)
-- Works with `file://` protocol
-- No dependencies, no frameworks
+python -m http.server 8000
+```
 
-## 💻 Browser Compatibility
+3. Save the file
+4. Double-click `start.bat` to start the server
+5. Hold Ctrl and click the URL shown to open the alarm clock
+6. Press `Ctrl+C` in the command window when done to stop the server
 
-**Works in:** Chrome, Edge, Firefox, Safari  
-**Recommended:** Chrome or Edge for best performance
+**Tip:** Change the port number in both the batch file and URL if you prefer a different port (e.g., 8080).
 
-## 📸 Screenshots
+### Option 3: Alternative Methods
 
-To add screenshots to this repo:
-1. Open alarm clock
-2. Capture screenshots:
-   - Main clock display
-   - Settings panel with alarms
-   - Red alarm screen
-3. Save in `screenshots/` folder
-4. Push to GitHub
+#### Using Node.js (If Installed)
 
-## ⚖️ License
+```cmd
+cd \workspace\alarm-clock
+npx serve
+```
 
-Free for personal use. Modify as you like!
+#### Using VS Code Live Server
 
-## 👤 Author
+1. Open the project folder in VS Code
+2. Install the "Live Server" extension
+3. Right-click on `index.html` and select "Open with Live Server"
 
-Created by Warren
+#### Running Directly (Limited Features)
 
----
+You can open `index.html` directly in your browser by double-clicking it, but:
+- YouTube music will not work due to browser security restrictions
+- The default alarm sound will still function properly
 
-**Pro Tip:** Bookmark this page in your browser for instant access. Keep your alarm music in a dedicated folder called "Alarm Music" for quick file selection each night!
+## Usage Guide
+
+### Setting an Alarm
+
+1. Click the **+** button to create a new alarm
+2. Select the **Time** using the time picker
+3. (Optional) Enter a **Label** like "Wake Up" or "Work"
+4. (Optional) Paste a **YouTube URL** to use custom music
+5. Click **Save**
+
+### Testing an Alarm
+
+1. Click the **Test Alarm** button
+2. You'll hear the default sound or YouTube music if configured
+3. Click **Stop** to end the test early
+
+### Managing Alarms
+
+1. Click **My Alarms** to view your alarm list
+2. Use the toggle switch to enable/disable an alarm
+3. Click the pencil icon to edit an alarm
+4. Click the trash icon to delete an alarm
+
+### When an Alarm Rings
+
+- The screen will pulse with a red animation
+- You'll hear your alarm sound (YouTube music or default beep)
+- Click **Snooze** to delay by 9 minutes
+- Click **Dismiss** to stop the alarm
+
+## File Structure
+
+```
+alarm-clock/
+├── index.html      # Main application file
+├── README.md       # This file
+├── start.bat       # Windows launcher script
+├── test.js         # Playwright tests
+└── dist/           # Production build
+    └── index.html
+```
+
+## Browser Compatibility
+
+Tested and working on:
+- Google Chrome (recommended)
+- Microsoft Edge
+- Firefox
+- Safari
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+## Limitations
+
+- YouTube integration requires an HTTP server (not file:// protocol)
+- The deployed URL is public - anyone with the link can access it
+- Alarm storage is local to your browser (no cloud sync)
+- Some browsers may block audio autoplay until user interaction
+
+## Credits
+
+Built with vanilla HTML, CSS, and JavaScript. Uses:
+- **JetBrains Mono** font for the digital clock display
+- **YouTube IFrame API** for music playback
+- **Web Audio API** for the default alarm sound
+
+## License
+
+This project is free to use and modify.

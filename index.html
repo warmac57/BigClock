@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Alarm Clock</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0F172A;
+            --bg-secondary: #1E293B;
+            --text-primary: #38BDF8;
+            --text-secondary: #94A3B8;
+            --text-glow: #38BDF8;
+            --alarm-active: #F43F5E;
+            --alarm-glow: #F43F5E;
+            --success: #10B981;
+            --danger: #EF4444;
+            --youtube-color: #FF0000;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .clock-container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .date-display {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+        }
+
+        .time-display {
+            font-size: clamp(4rem, 18vw, 12rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            text-shadow: 0 0 20px var(--text-glow), 0 0 40px var(--text-glow), 0 0 60px var(--text-glow);
+            letter-spacing: 0.05em;
+            line-height: 1;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .time-display.alarm-active {
+            color: var(--alarm-active);
+            text-shadow: 0 0 20px var(--alarm-glow), 0 0 40px var(--alarm-glow), 0 0 60px var(--alarm-glow);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px var(--text-glow), 0 0 40px var(--text-glow);
+            }
+            to {
+                text-shadow: 0 0 30px var(--text-glow), 0 0 60px var(--text-glow), 0 0 80px var(--text-glow);
+            }
+        }
+
+        .colon {
+            display: inline-block;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .seconds {
+            font-size: 0.5em;
+            vertical-align: super;
+        }
+
+        .controls {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: var(--bg-secondary);
+            border: 2px solid var(--text-primary);
+            color: var(--text-primary);
+            padding: 1rem 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px var(--text-glow);
+        }
+
+        .btn-fab {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .btn-test {
+            background: transparent;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .btn-test:hover {
+            background: #3b82f6;
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-test.playing {
+            background: var(--alarm-active);
+            border-color: var(--alarm-active);
+            color: white;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px var(--alarm-glow); }
+            50% { box-shadow: 0 0 30px var(--alarm-glow); }
+        }
+
+        .alarms-section {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 500px;
+            text-align: left;
+        }
+
+        .alarms-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--bg-secondary);
+        }
+
+        .alarms-title {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        .alarms-count {
+            background: var(--bg-secondary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .alarms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alarm-item {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .alarm-item:hover {
+            border-color: var(--text-primary);
+        }
+
+        .alarm-item.inactive {
+            opacity: 0.5;
+        }
+
+        .alarm-item.youtube .alarm-time::after {
+            content: ' ▶';
+            color: var(--youtube-color);
+            font-size: 0.7em;
+        }
+
+        .alarm-info {
+            flex: 1;
+        }
+
+        .alarm-time {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .alarm-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .alarm-youtube {
+            font-size: 0.75rem;
+            color: var(--youtube-color);
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .alarm-youtube svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--youtube-color);
+        }
+
+        .alarm-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            border-radius: 32px;
+            transition: 0.3s;
+            border: 2px solid var(--text-secondary);
+        }
+
+        .toggle-slider::before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(28px);
+            background: var(--bg-primary);
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-edit {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .btn-edit:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            border: 2px solid var(--text-primary);
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.3);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--text-secondary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            box-shadow: 0 0 10px var(--text-glow);
+        }
+
+        .form-input.youtube-input {
+            text-align: left;
+            padding-left: 2.5rem;
+        }
+
+        .youtube-input-wrapper {
+            position: relative;
+        }
+
+        .youtube-input-wrapper svg {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            fill: var(--youtube-color);
+        }
+
+        .url-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 2px solid var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .btn-cancel:hover {
+            background: var(--text-secondary);
+            color: var(--bg-primary);
+        }
+
+        /* Alarm Trigger Overlay */
+        .alarm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: pulse-alarm 0.5s infinite;
+        }
+
+        .alarm-overlay.active {
+            display: flex;
+        }
+
+        @keyframes pulse-alarm {
+            0%, 100% { background: rgba(15, 23, 42, 0.95); }
+            50% { background: rgba(244, 63, 94, 0.3); }
+        }
+
+        .alarm-trigger-content {
+            text-align: center;
+        }
+
+        .alarm-trigger-time {
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 700;
+            color: var(--alarm-active);
+            text-shadow: 0 0 30px var(--alarm-glow), 0 0 60px var(--alarm-glow);
+            margin-bottom: 1rem;
+        }
+
+        .alarm-trigger-label {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+        }
+
+        .alarm-trigger-actions {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-snooze {
+            background: var(--alarm-active);
+            border-color: var(--alarm-active);
+            color: white;
+            padding: 1.5rem 3rem;
+            font-size: 1.2rem;
+        }
+
+        .btn-snooze:hover {
+            background: transparent;
+            color: var(--alarm-active);
+            box-shadow: 0 0 30px var(--alarm-glow);
+        }
+
+        .btn-dismiss {
+            background: transparent;
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+            padding: 1.5rem 3rem;
+            font-size: 1.2rem;
+        }
+
+        .btn-dismiss:hover {
+            background: var(--text-secondary);
+            color: var(--bg-primary);
+        }
+
+        /* YouTube Player Container */
+        #youtube-player-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #youtube-player-container.visible {
+            opacity: 1;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Test Alarm Toast */
+        .test-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            border: 2px solid var(--text-primary);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            z-index: 500;
+            animation: slideUp 0.3s ease;
+        }
+
+        .test-toast.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .test-toast-text {
+            font-size: 1rem;
+        }
+
+        .test-toast button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .test-toast button:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .alarm-item {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .alarm-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <div class="clock-container">
+        <div class="date-display" id="dateDisplay"></div>
+        <div class="time-display" id="timeDisplay">
+            <span id="hours">00</span><span class="colon">:</span><span id="minutes">00</span><span class="seconds"><span class="colon">:</span><span id="seconds">00</span></span>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-fab" id="addAlarmBtn" title="Add Alarm">+</button>
+            <button class="btn btn-test" id="testAlarmBtn">Test Alarm</button>
+            <button class="btn" id="viewAlarmsBtn">My Alarms</button>
+        </div>
+
+        <div class="alarms-section" id="alarmsSection" style="display: none;">
+            <div class="alarms-header">
+                <span class="alarms-title">My Alarms</span>
+                <span class="alarms-count" id="alarmsCount">0 alarms</span>
+            </div>
+            <div class="alarms-list" id="alarmsList">
+                <!-- Alarms will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Alarm Modal -->
+    <div class="modal-overlay" id="alarmModal">
+        <div class="modal">
+            <h2 class="modal-title" id="modalTitle">Set Alarm</h2>
+            <div class="form-group">
+                <label class="form-label">Time</label>
+                <input type="time" class="form-input" id="alarmTimeInput" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Label (optional)</label>
+                <input type="text" class="form-input" id="alarmLabelInput" placeholder="e.g., Wake Up">
+            </div>
+            <div class="form-group">
+                <label class="form-label">YouTube URL (optional)</label>
+                <div class="youtube-input-wrapper">
+                    <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    <input type="text" class="form-input youtube-input" id="alarmYoutubeInput" placeholder="Paste YouTube link or playlist">
+                </div>
+                <p class="url-hint">Supports: youtube.com/watch, youtu.be, playlists</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" id="cancelModalBtn">Cancel</button>
+                <button class="btn" id="saveAlarmBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Trigger Overlay -->
+    <div class="alarm-overlay" id="alarmTriggerOverlay">
+        <div class="alarm-trigger-content">
+            <div class="alarm-trigger-time" id="triggerTime">00:00</div>
+            <div class="alarm-trigger-label" id="triggerLabel">Alarm</div>
+            <div class="alarm-trigger-actions">
+                <button class="btn btn-snooze" id="snoozeBtn">Snooze (9 min)</button>
+                <button class="btn btn-dismiss" id="dismissBtn">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Alarm Toast -->
+    <div class="test-toast" id="testToast">
+        <span class="test-toast-text">Playing test alarm...</span>
+        <button onclick="stopTestAlarm()">Stop</button>
+    </div>
+
+    <!-- YouTube Player Container -->
+    <div id="youtube-player-container"></div>
+
+    <script>
+        // Audio context for alarm sound
+        let audioContext;
+        let alarmOscillator;
+        let alarmGain;
+        let isAlarmPlaying = false;
+        let isTestAlarmPlaying = false;
+
+        // YouTube player
+        let youtubePlayer;
+        let youtubeReady = false;
+        let currentYoutubeUrl = null;
+
+        // Initialize audio context on user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        // Play default alarm sound
+        function playDefaultAlarmSound() {
+            initAudio();
+            
+            if (isAlarmPlaying || isTestAlarmPlaying) return;
+
+            alarmOscillator = audioContext.createOscillator();
+            alarmGain = audioContext.createGain();
+
+            alarmOscillator.connect(alarmGain);
+            alarmGain.connect(audioContext.destination);
+
+            alarmOscillator.type = 'sine';
+            alarmOscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+            
+            alarmGain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            
+            // Modulate frequency for alarm-like sound
+            const lfo = audioContext.createOscillator();
+            const lfoGain = audioContext.createGain();
+            lfo.frequency.value = 2;
+            lfoGain.gain.value = 100;
+            lfo.connect(lfoGain);
+            lfoGain.connect(alarmOscillator.frequency);
+            lfo.start();
+            
+            alarmOscillator.start();
+            isAlarmPlaying = true;
+            isTestAlarmPlaying = true;
+        }
+
+        // Stop default alarm sound
+        function stopDefaultAlarmSound() {
+            if (alarmOscillator) {
+                alarmOscillator.stop();
+                alarmOscillator = null;
+            }
+            isAlarmPlaying = false;
+            isTestAlarmPlaying = false;
+        }
+
+        // YouTube API ready
+        function onYouTubeIframeAPIReady() {
+            youtubePlayer = new YT.Player('youtube-player-container', {
+                height: '200',
+                width: '300',
+                playerVars: {
+                    autoplay: 0,
+                    controls: 1,
+                    modestbranding: 1,
+                    rel: 0,
+                    loop: 1,
+                    playlist: ''
+                },
+                events: {
+                    onReady: function(event) {
+                        youtubeReady = true;
+                    },
+                    onStateChange: function(event) {
+                        // Loop video if it ends
+                        if (event.data === YT.PlayerState.ENDED) {
+                            youtubePlayer.playVideo();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Parse YouTube URL to get video ID
+        function parseYouTubeUrl(url) {
+            if (!url) return null;
+            
+            // Handle various URL formats
+            const patterns = [
+                // youtube.com/watch?v=VIDEO_ID
+                /(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
+                // youtu.be/VIDEO_ID
+                /(?:youtu\.be\/)([^&\n?#]+)/,
+                // Playlist: youtube.com/playlist?list=PLAYLIST_ID
+                /youtube\.com\/playlist\?list=([^&\n?#]+)/
+            ];
+
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) {
+                    return match[1];
+                }
+            }
+            return null;
+        }
+
+        // Play YouTube video
+        function playYouTubeVideo(videoId) {
+            if (!youtubeReady || !youtubePlayer || !videoId) {
+                console.log('YouTube not ready or no video ID, falling back to default sound');
+                playDefaultAlarmSound();
+                return false;
+            }
+
+            try {
+                youtubePlayer.loadVideoById(videoId);
+                document.getElementById('youtube-player-container').classList.add('visible');
+                isAlarmPlaying = true;
+                return true;
+            } catch (e) {
+                console.log('Error loading YouTube video, falling back:', e);
+                playDefaultAlarmSound();
+                return false;
+            }
+        }
+
+        // Stop YouTube video
+        function stopYouTubeVideo() {
+            if (youtubePlayer && youtubeReady) {
+                try {
+                    youtubePlayer.stopVideo();
+                } catch (e) {
+                    console.log('Error stopping YouTube:', e);
+                }
+            }
+            document.getElementById('youtube-player-container').classList.remove('visible');
+        }
+
+        // State
+        let alarms = [];
+        let editingAlarmId = null;
+        let currentTriggeringAlarm = null;
+
+        // DOM Elements
+        const timeDisplay = {
+            hours: document.getElementById('hours'),
+            minutes: document.getElementById('minutes'),
+            seconds: document.getElementById('seconds'),
+            display: document.getElementById('timeDisplay')
+        };
+        const dateDisplay = document.getElementById('dateDisplay');
+        const alarmModal = document.getElementById('alarmModal');
+        const alarmTimeInput = document.getElementById('alarmTimeInput');
+        const alarmLabelInput = document.getElementById('alarmLabelInput');
+        const alarmYoutubeInput = document.getElementById('alarmYoutubeInput');
+        const modalTitle = document.getElementById('modalTitle');
+        const alarmsList = document.getElementById('alarmsList');
+        const alarmsSection = document.getElementById('alarmsSection');
+        const alarmsCount = document.getElementById('alarmsCount');
+        const alarmTriggerOverlay = document.getElementById('alarmTriggerOverlay');
+        const triggerTime = document.getElementById('triggerTime');
+        const triggerLabel = document.getElementById('triggerLabel');
+        const testToast = document.getElementById('testToast');
+        const testAlarmBtn = document.getElementById('testAlarmBtn');
+
+        // Load alarms from localStorage
+        function loadAlarms() {
+            const saved = localStorage.getItem('alarms');
+            if (saved) {
+                alarms = JSON.parse(saved);
+            }
+        }
+
+        // Save alarms to localStorage
+        function saveAlarms() {
+            localStorage.setItem('alarms', JSON.stringify(alarms));
+        }
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            timeDisplay.hours.textContent = hours;
+            timeDisplay.minutes.textContent = minutes;
+            timeDisplay.seconds.textContent = seconds;
+
+            // Update date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+
+            // Check alarms
+            checkAlarms(now);
+        }
+
+        // Check if any alarm should trigger
+        function checkAlarms(now) {
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            alarms.forEach(alarm => {
+                if (alarm.active && alarm.time === currentTime && alarm.lastTriggered !== currentTime) {
+                    // Only trigger once per minute
+                    alarm.lastTriggered = currentTime;
+                    saveAlarms();
+                    triggerAlarm(alarm);
+                }
+            });
+        }
+
+        // Trigger alarm
+        function triggerAlarm(alarm) {
+            currentTriggeringAlarm = alarm;
+            triggerTime.textContent = alarm.time;
+            triggerLabel.textContent = alarm.label || 'Alarm';
+            alarmTriggerOverlay.classList.add('active');
+
+            // Check if alarm has YouTube URL
+            if (alarm.youtubeUrl) {
+                const videoId = parseYouTubeUrl(alarm.youtubeUrl);
+                if (videoId) {
+                    const success = playYouTubeVideo(videoId);
+                    if (!success) {
+                        playDefaultAlarmSound();
+                    }
+                } else {
+                    playDefaultAlarmSound();
+                }
+            } else {
+                playDefaultAlarmSound();
+            }
+        }
+
+        // Format time for display
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hoursInt = parseInt(hours);
+            const ampm = hoursInt >= 12 ? 'PM' : 'AM';
+            const hours12 = hoursInt % 12 || 12;
+            return `${hours12}:${minutes} ${ampm}`;
+        }
+
+        // Render alarms list
+        function renderAlarms() {
+            if (alarms.length === 0) {
+                alarmsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⏰</div>
+                        <p>No alarms set</p>
+                        <p>Click + to add one</p>
+                    </div>
+                `;
+            } else {
+                alarmsList.innerHTML = alarms.map(alarm => `
+                    <div class="alarm-item ${alarm.active ? '' : 'inactive'} ${alarm.youtubeUrl ? 'youtube' : ''}">
+                        <div class="alarm-info">
+                            <div class="alarm-time">${formatTime(alarm.time)}</div>
+                            ${alarm.label ? `<div class="alarm-label">${alarm.label}</div>` : ''}
+                            ${alarm.youtubeUrl ? `
+                                <div class="alarm-youtube">
+                                    <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                    YouTube
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="alarm-actions">
+                            <button class="btn-edit" onclick="editAlarm(${alarm.id})" title="Edit">✏️</button>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${alarm.active ? 'checked' : ''} onchange="toggleAlarm(${alarm.id})">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <button class="btn-delete" onclick="deleteAlarm(${alarm.id})" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            alarmsCount.textContent = `${alarms.length} alarm${alarms.length !== 1 ? 's' : ''}`;
+        }
+
+        // Add new alarm
+        function addAlarm() {
+            editingAlarmId = null;
+            modalTitle.textContent = 'Set Alarm';
+            alarmTimeInput.value = '';
+            alarmLabelInput.value = '';
+            alarmYoutubeInput.value = '';
+            alarmModal.classList.add('active');
+        }
+
+        // Edit alarm
+        function editAlarm(id) {
+            const alarm = alarms.find(a => a.id === id);
+            if (alarm) {
+                editingAlarmId = id;
+                modalTitle.textContent = 'Edit Alarm';
+                alarmTimeInput.value = alarm.time;
+                alarmLabelInput.value = alarm.label || '';
+                alarmYoutubeInput.value = alarm.youtubeUrl || '';
+                alarmModal.classList.add('active');
+            }
+        }
+
+        // Save alarm
+        function saveAlarm() {
+            const time = alarmTimeInput.value;
+            const label = alarmLabelInput.value.trim();
+            const youtubeUrl = alarmYoutubeInput.value.trim();
+
+            if (!time) {
+                alert('Please select a time');
+                return;
+            }
+
+            // Validate YouTube URL if provided
+            if (youtubeUrl) {
+                const videoId = parseYouTubeUrl(youtubeUrl);
+                if (!videoId) {
+                    alert('Please enter a valid YouTube URL');
+                    return;
+                }
+            }
+
+            if (editingAlarmId !== null) {
+                // Update existing alarm
+                const index = alarms.findIndex(a => a.id === editingAlarmId);
+                if (index !== -1) {
+                    alarms[index].time = time;
+                    alarms[index].label = label;
+                    alarms[index].youtubeUrl = youtubeUrl || null;
+                    alarms[index].lastTriggered = null;
+                }
+            } else {
+                // Create new alarm
+                alarms.push({
+                    id: Date.now(),
+                    time: time,
+                    label: label,
+                    youtubeUrl: youtubeUrl || null,
+                    active: true,
+                    lastTriggered: null
+                });
+            }
+
+            saveAlarms();
+            renderAlarms();
+            alarmModal.classList.remove('active');
+        }
+
+        // Toggle alarm
+        function toggleAlarm(id) {
+            const alarm = alarms.find(a => a.id === id);
+            if (alarm) {
+                alarm.active = !alarm.active;
+                alarm.lastTriggered = null;
+                saveAlarms();
+                renderAlarms();
+            }
+        }
+
+        // Delete alarm
+        function deleteAlarm(id) {
+            if (confirm('Delete this alarm?')) {
+                alarms = alarms.filter(a => a.id !== id);
+                saveAlarms();
+                renderAlarms();
+            }
+        }
+
+        // Test alarm
+        function testAlarm() {
+            if (isTestAlarmPlaying) {
+                stopTestAlarm();
+                return;
+            }
+
+            initAudio();
+            
+            // Show toast
+            testToast.classList.add('active');
+            testAlarmBtn.classList.add('playing');
+            testAlarmBtn.textContent = 'Stop';
+
+            // Check if there's a YouTube URL in the first alarm to test with
+            const alarmWithYoutube = alarms.find(a => a.youtubeUrl);
+            if (alarmWithYoutube) {
+                const videoId = parseYouTubeUrl(alarmWithYoutube.youtubeUrl);
+                if (videoId) {
+                    playYouTubeVideo(videoId);
+                    // Set timeout for test alarm (10 seconds)
+                    setTimeout(() => {
+                        if (isTestAlarmPlaying) {
+                            stopTestAlarm();
+                        }
+                    }, 10000);
+                    return;
+                }
+            }
+
+            // No YouTube, play default sound
+            playDefaultAlarmSound();
+
+            // Auto stop after 10 seconds
+            setTimeout(() => {
+                if (isTestAlarmPlaying) {
+                    stopTestAlarm();
+                }
+            }, 10000);
+        }
+
+        // Stop test alarm
+        function stopTestAlarm() {
+            stopDefaultAlarmSound();
+            stopYouTubeVideo();
+            testToast.classList.remove('active');
+            testAlarmBtn.classList.remove('playing');
+            testAlarmBtn.textContent = 'Test Alarm';
+        }
+
+        // Snooze alarm
+        function snoozeAlarm() {
+            stopAlarm();
+            
+            // Calculate snooze time (9 minutes)
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 9);
+            const snoozeTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            // Add or update snooze alarm
+            const existingSnooze = alarms.find(a => a.label === 'Snooze' && a.isSnooze);
+            if (existingSnooze) {
+                existingSnooze.time = snoozeTime;
+                existingSnooze.active = true;
+                existingSnooze.lastTriggered = null;
+            } else {
+                alarms.push({
+                    id: Date.now(),
+                    time: snoozeTime,
+                    label: 'Snooze',
+                    youtubeUrl: currentTriggeringAlarm ? currentTriggeringAlarm.youtubeUrl : null,
+                    active: true,
+                    isSnooze: true,
+                    lastTriggered: null
+                });
+            }
+            
+            saveAlarms();
+            renderAlarms();
+            currentTriggeringAlarm = null;
+        }
+
+        // Dismiss alarm
+        function dismissAlarm() {
+            stopAlarm();
+            currentTriggeringAlarm = null;
+        }
+
+        // Stop alarm (both YouTube and default)
+        function stopAlarm() {
+            stopDefaultAlarmSound();
+            stopYouTubeVideo();
+            alarmTriggerOverlay.classList.remove('active');
+        }
+
+        // Toggle alarms section
+        function toggleAlarmsSection() {
+            if (alarmsSection.style.display === 'none') {
+                alarmsSection.style.display = 'block';
+                renderAlarms();
+            } else {
+                alarmsSection.style.display = 'none';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('addAlarmBtn').addEventListener('click', () => {
+            initAudio();
+            addAlarm();
+        });
+
+        testAlarmBtn.addEventListener('click', testAlarm);
+        
+        document.getElementById('viewAlarmsBtn').addEventListener('click', toggleAlarmsSection);
+        document.getElementById('cancelModalBtn').addEventListener('click', () => alarmModal.classList.remove('active'));
+        document.getElementById('saveAlarmBtn').addEventListener('click', saveAlarm);
+        document.getElementById('snoozeBtn').addEventListener('click', snoozeAlarm);
+        document.getElementById('dismissBtn').addEventListener('click', dismissAlarm);
+
+        // Close modal on overlay click
+        alarmModal.addEventListener('click', (e) => {
+            if (e.target === alarmModal) {
+                alarmModal.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        loadAlarms();
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Make functions globally accessible
+        window.editAlarm = editAlarm;
+        window.toggleAlarm = toggleAlarm;
+        window.deleteAlarm = deleteAlarm;
+        window.stopTestAlarm = stopTestAlarm;
+    </script>
+</body>
+</html>
