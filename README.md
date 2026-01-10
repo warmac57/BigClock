@@ -2,7 +2,7 @@
 
 A feature-rich digital alarm clock with a large LED-style display, YouTube music support, and an intuitive web interface.
 
-![BigClock Screenshot](https://w1r05trg8bf6.space.minimax.io)
+<img width="833" height="578" alt="BigClock" src="https://github.com/user-attachments/assets/d9649be8-0e0d-4e02-a93e-1716a6e52424" />
 
 ## Features
 
@@ -19,6 +19,8 @@ A feature-rich digital alarm clock with a large LED-style display, YouTube music
 - Edit or delete existing alarms
 - Alarms persist between sessions using localStorage
 - Visual indicators show which alarms have YouTube music
+
+<img width="892" height="550" alt="BigClock2" src="https://github.com/user-attachments/assets/084700ff-c835-4ef1-ab87-063c77ce45fc" />
 
 ### Test Alarm
 - Preview your alarm sound before setting it
