@@ -598,6 +598,22 @@
             color: white;
         }
 
+        /* Settings Toggle */
+        .settings-toggle {
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .settings-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .controls {
@@ -636,6 +652,15 @@
             <button class="btn btn-fab" id="addAlarmBtn" title="Add Alarm">+</button>
             <button class="btn btn-test" id="testAlarmBtn">Test Alarm</button>
             <button class="btn" id="viewAlarmsBtn">My Alarms</button>
+        </div>
+
+        <div class="settings-toggle">
+            <span class="settings-label">12h</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="timeFormatToggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="settings-label">24h</span>
         </div>
 
         <div class="alarms-section" id="alarmsSection" style="display: none;">
@@ -847,6 +872,29 @@
         let alarms = [];
         let editingAlarmId = null;
         let currentTriggeringAlarm = null;
+        let use24HourFormat = false;
+
+        // Load settings
+        function loadSettings() {
+            const saved = localStorage.getItem('use24HourFormat');
+            if (saved !== null) {
+                use24HourFormat = JSON.parse(saved);
+                document.getElementById('timeFormatToggle').checked = use24HourFormat;
+            }
+        }
+
+        // Save settings
+        function saveSettings() {
+            localStorage.setItem('use24HourFormat', JSON.stringify(use24HourFormat));
+        }
+
+        // Toggle time format
+        function toggleTimeFormat() {
+            use24HourFormat = document.getElementById('timeFormatToggle').checked;
+            saveSettings();
+            updateTime();
+            renderAlarms();
+        }
 
         // DOM Elements
         const timeDisplay = {
@@ -886,11 +934,18 @@
         // Update time display
         function updateTime() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
+            let hours = now.getHours();
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
 
-            timeDisplay.hours.textContent = hours;
+            let displayHours = String(hours).padStart(2, '0');
+
+            if (!use24HourFormat) {
+                const hours12 = hours % 12 || 12;
+                displayHours = String(hours12);
+            }
+
+            timeDisplay.hours.textContent = displayHours;
             timeDisplay.minutes.textContent = minutes;
             timeDisplay.seconds.textContent = seconds;
 
@@ -904,7 +959,7 @@
 
         // Check if any alarm should trigger
         function checkAlarms(now) {
-            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const currentTime = getCurrentTimeForComparison();
             
             alarms.forEach(alarm => {
                 if (alarm.active && alarm.time === currentTime && alarm.lastTriggered !== currentTime) {
@@ -919,7 +974,7 @@
         // Trigger alarm
         function triggerAlarm(alarm) {
             currentTriggeringAlarm = alarm;
-            triggerTime.textContent = alarm.time;
+            triggerTime.textContent = formatTime(alarm.time, false);
             triggerLabel.textContent = alarm.label || 'Alarm';
             alarmTriggerOverlay.classList.add('active');
 
@@ -940,12 +995,28 @@
         }
 
         // Format time for display
-        function formatTime(time24) {
+        function formatTime(time24, showAmPm = true) {
             const [hours, minutes] = time24.split(':');
             const hoursInt = parseInt(hours);
-            const ampm = hoursInt >= 12 ? 'PM' : 'AM';
-            const hours12 = hoursInt % 12 || 12;
-            return `${hours12}:${minutes} ${ampm}`;
+
+            if (use24HourFormat) {
+                return `${String(hoursInt).padStart(2, '0')}:${minutes}`;
+            } else {
+                const ampm = hoursInt >= 12 ? 'PM' : 'AM';
+                const hours12 = hoursInt % 12 || 12;
+                return showAmPm ? `${hours12}:${minutes} ${ampm}` : `${hours12}:${minutes}`;
+            }
+        }
+
+        // Format time for comparison (always 24h)
+        function formatTimeForComparison(time24) {
+            return time24;
+        }
+
+        // Format current time for comparison
+        function getCurrentTimeForComparison() {
+            const now = new Date();
+            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
 
         // Render alarms list
@@ -1188,6 +1259,7 @@
         testAlarmBtn.addEventListener('click', testAlarm);
         
         document.getElementById('viewAlarmsBtn').addEventListener('click', toggleAlarmsSection);
+        document.getElementById('timeFormatToggle').addEventListener('change', toggleTimeFormat);
         document.getElementById('cancelModalBtn').addEventListener('click', () => alarmModal.classList.remove('active'));
         document.getElementById('saveAlarmBtn').addEventListener('click', saveAlarm);
         document.getElementById('snoozeBtn').addEventListener('click', snoozeAlarm);
@@ -1202,6 +1274,7 @@
 
         // Initialize
         loadAlarms();
+        loadSettings();
         updateTime();
         setInterval(updateTime, 1000);
 
